@@ -39,6 +39,10 @@ plot_5vs10_single(ndays5_tag$Cores, ndays5_tag$Dur_run, ndays10_tag$Cores,
 plot_5vs10_single(ndays5_tag$Cores, ndays5_tag$Dur_fin, ndays10_tag$Cores,
                   ndays10_tag$Dur_fin, TRUE, "Finish Duration",  TRUE, "5vs10_dur_fin_tagged")
 
+### Throughput ###--------------------------------------------------------------
+# See page 43 of CESM user guide 1.2 for explanation
+plot(ndays5_notag$Cores, ndays5_notag$Throughput)
+plot(ndays5_notag$Cores, ndays5_notag$Cost)
 
 ### Plots both ####--------------------------------------------------------------
 # Total duration
@@ -60,3 +64,4 @@ plot_5vs10_all(ndays5_notag$Cores, ndays5_notag$Dur_run, ndays10_notag$Cores,
 plot_5vs10_all(ndays5_notag$Cores, ndays5_notag$Dur_fin, ndays10_notag$Cores,
                ndays10_notag$Dur_fin, ndays5_tag$Cores, ndays5_tag$Dur_fin, ndays10_tag$Cores,
                ndays10_tag$Dur_fin, "Finish Duration", FALSE, "5vs10_dur_fin_both")
+
