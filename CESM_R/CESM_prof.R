@@ -75,11 +75,11 @@ get_data <- function(){
                           , dim = c(length(run_0111205), 19, 1))
   `row.names<-`(prof_data_tagged, row.names)
 # No tags 
-  prof_data_not <- array(c(run_025601, run_025605, run_028405_2, run_0211205, run_0211210,
+  prof_data_not <- array(c(run_025601, run_025605, run_028405, run_028405_2, run_0211205, run_0211210,
                          run_022801, run_022805, run_0222410, run_0222405, run_0219605, 
                          run_0219610, run_0216810, run_0216805, run_0214005, run_0214010,
                          run_028410, run_025610, run_022810),
-                       dim = c(length(run_0211205),18,1))
+                       dim = c(length(run_0211205),19,1))
   `row.names<-`(prof_data_not, row.names)
 
 # Conversion to data frame
@@ -110,5 +110,57 @@ get_data <- function(){
                              stringsAsFactors=FALSE)
 
   return(list(prof_not_df, prof_tagged_df))
+}
+
+
+#### add_func_data ###--------------------------------------------------------------------------------------
+#' Add data from a run to the function list
+#' @param filename File where timing data of functions is stored.
+#' @param IDvar is the starting time
+add_func_data <- function(filename, IDvar){
+  
+  if (length(subset(func_df, func_df[,1,]==IDvar)) > 0){
+    print("ERROR: ID used already!")
+  } else {
+    timing_data <- read.table(filename, skip = 5, header=TRUE)
+    # ErrorID is for checking if run is in data frame containing prof data
+    ErrorID <- FALSE
+    for (func in 1:length(timing_data$name)){
+      
+      subset_data <- subset(timing_data, name==func_names[func])
+      # Check if function has been called:
+      if (length(subset_data$walltotal)== 0){
+        print(paste("Run", filename, "did not use following function:"))
+        print(paste("Function name:", func_names[func]))
+      } else {
+        func_df[nrun,6,func] <- subset_data$walltotal
+        func_df[nrun,7,func] <- subset_data$wallmax
+        func_df[nrun,8,func] <- subset_data$wallmin
+      }
+      
+      subset_prof_data <- as.numeric(subset(prof_tagged_df, ID == IDvar, 
+                                            select = c(ID, Tagged, Cores, NDays, Dur_tot)))
+      if (is.na(subset_prof_data[1]) ){
+        subset_prof_data <- as.numeric(subset(prof_not_df, ID == IDvar,
+                                              select = c(ID, Tagged, Cores, NDays, Dur_tot)))
+        if (is.na(subset_prof_data[1]) ){
+          ErrorID <- TRUE
+        }
+      }
+      
+      func_df[nrun,1,func] <- subset_prof_data[1]
+      func_df[nrun,2,func] <- subset_prof_data[2]
+      func_df[nrun,3,func] <- subset_prof_data[3]
+      func_df[nrun,4,func] <- subset_prof_data[4]
+      func_df[nrun,5,func] <- subset_prof_data[5]
+    }
+    if (ErrorID){
+      print("ERROR: No fitting ID in input data set from profiling.")
+      print(paste("ID:", IDvar))
+    }
+    # Continue to next run
+    nrun <- nrun + 1
+  }
+  return(list(func_df, nrun))
 }
 
