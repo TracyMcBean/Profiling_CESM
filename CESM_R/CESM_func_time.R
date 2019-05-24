@@ -3,12 +3,13 @@
 
 source("./CESM_prof.R")
 
+
 # Get data
 prof_data <- get_data()
 prof_tagged_df <- prof_data[[2]]
 prof_not_df <- prof_data[[1]]
 
-timing_data <- read.table("~/Documents/IASS/Profiling_CESM/Timing_data/ccsm_timing_stats.190515-100256", 
+timing_data <- read.table("../Timing_data/ccsm_timing_stats.190515-100256", 
                           skip = 5, header=TRUE)
 # get function names
 func_names <- as.vector(timing_data$name)
@@ -32,7 +33,7 @@ timeID <- c(100256, 112230, 160758, "095004", 123658, 113255, 115631, "094444", 
             112847, 115041, 135839, 143315, 150757, 161950)
 
 for (i in 1:length(dateID)){
-  list_data <- add_func_data(paste("~/Documents/IASS/Profiling_CESM/Timing_data/ccsm_timing_stats.",dateID[i], "-", as.character(timeID[i]), sep=""),
+  list_data <- add_func_data(paste("../Timing_data/ccsm_timing_stats.",dateID[i], "-", as.character(timeID[i]), sep=""),
                              as.character(timeID[i]))
   func_df <- list_data[[1]]
   nrun <- list_data[[2]]
@@ -52,7 +53,7 @@ for (i in 1:length(func_df[1,1,])){
   ymin <- min(wallclock_per_not, wallclock_per_tag,na.rm = TRUE)
   ymax <- max(wallclock_per_not, wallclock_per_tag,na.rm = TRUE)
   # plot
-  png(paste("~/Documents/IASS/Profiling_CESM/CESM_R/Plots/", names(func_df[1,1,])[i], "_10days", sep=""))
+  png(paste("./Plots/", names(func_df[1,1,])[i], "_10days", sep=""))
   plot(cores_tag, wallclock_per_tag, ylim=c(ymin, ymax),
        ylab = "% of total", xlab="Cores", main = paste("Wallclock time", names(func_df[1,1,])[i], "(10 day run)"), pch=15, col="red" )
   points(cores_not, wallclock_per_not, col = "darkgreen", pch = 16)
@@ -64,8 +65,8 @@ wc_means <- array(NA, dim = c(length(func_names),2))
 wc_diff <- array(NA, dim = length(func_names))
 # Check out the situtation of the average values and their spread.
 for (i in 1:length(func_names)){
-  wallclock_per_tag <- (func_df[which(func_df[,4,i]==10 & func_df[,2,i]==1),7,i]/ func_df[which(func_df[,4,i]==10 & func_df[,2,i]==1),5,i]) *100
-  wallclock_per_not <- (func_df[which(func_df[,4,i]==10 & func_df[,2,i]==0),7,i]/ func_df[which(func_df[,4,i]==10 & func_df[,2,i]==0),5,i]) *100
+  wallclock_per_tag <- (func_df[which(func_df[,2,i]==1),7,i]/ func_df[which(func_df[,2,i]==1),5,i]) *100
+  wallclock_per_not <- (func_df[which(func_df[,2,i]==0),7,i]/ func_df[which(func_df[,2,i]==0),5,i]) *100
   
   wc_means[i,1] <- round(mean(wallclock_per_tag, na.rm = TRUE), digits=5)
   wc_means[i,2] <- round(mean(wallclock_per_not, na.rm=TRUE), digits=5)
@@ -76,10 +77,27 @@ for (i in 1:length(func_names)){
 
 # If the difference is positive then the non tagged version took longer for that timer.
 par(mar=c(5,9,4,2)+0.1)
-barplot(wc_diff[which(wc_diff > 3 | wc_diff < -3)], horiz=TRUE, col = c("green", rep("blue",6), rep("green", 13)),
-        main = "Timer difference", sub = "Wallclock time of timer taken in percent of total wallclock time of run", xlab = "Difference Tagged - No tag in %")
+barplot(wc_diff[which(wc_diff > 3 | wc_diff < -3)], horiz=TRUE, col = c(rep("blue",6), rep("green", 13)),
+        main = "Timer difference", sub = "Wallclock time of timer taken in percent of total wallclock time of run (includes 5 and 10 days run)",
+        xlab = "Difference Tagged - No tag in %")
 mtext(side = 2, text = func_names[which(wc_diff > 3 | wc_diff < -3)], las=1, at=seq(0.7,23, 1.21), cex=0.8)
 abline(h=seq(0,23, 1.21), col="grey", lty="dotted")
 #TODO: How to include variance?
+
+
+# (t_tagged-t_not)/t_not
+for (i in 1:length(func_names)){
+  wallclock_per_tag <- (func_df[which(func_df[,4,i]!=1 & func_df[,2,i]==1),7,i]/ func_df[which(func_df[,4,i]!=1 & func_df[,2,i]==1),5,i]) *100
+  wallclock_per_not <- (func_df[which(func_df[,4,i]!=1 & func_df[,2,i]==0),7,i]/ func_df[which(func_df[,4,i]!=1 & func_df[,2,i]==0),5,i]) *100
+  
+  wc_means[i,1] <- round(mean(wallclock_per_tag, na.rm = TRUE), digits=5)
+  wc_means[i,2] <- round(mean(wallclock_per_not, na.rm=TRUE), digits=5)
+  
+  wc_diff[i] <- diff(wc_means[i,])/wc_means[i,2]
+}
+
+wc_diff
+
+
 
       
