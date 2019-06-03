@@ -44,11 +44,13 @@ plot_5vs10_single(ndays5_tag$Cores, ndays5_tag$Dur_fin, ndays10_tag$Cores,
 ### Throughput and Cost ###--------------------------------------------------------------
 # See page 43 of CESM user guide 1.2 for explanation
 plot_5vs10_flex(ndays5_tag$Cores, ndays5_tag$Throughput, ndays10_tag$Cores,
-                  ndays10_tag$Throughput, ytext="Simulated_years / day ", isTagged=TRUE, "Throughput", saveVar, "5vs10_troughput_tagged")
+                  ndays10_tag$Throughput, ytext="Simulated_years / day ", isTagged=TRUE,
+                "Throughput", saveVar, "5vs10_troughput_tagged")
 # Cost
 # The cost is expected to increase if using more cores for CESM
 plot_5vs10_flex(ndays5_tag$Cores, ndays5_tag$Cost, ndays10_tag$Cores,
-                ndays10_tag$Cost, ytext="pe-hrs/simulated_years", isTagged=TRUE, "Cost",  saveVar, "5vs10_cost_tagged")
+                ndays10_tag$Cost, ytext="pe-hrs/simulated_years", isTagged=TRUE,
+                "Cost",  saveVar, "5vs10_cost_tagged")
 
 
 ### Plots both ####--------------------------------------------------------------
@@ -75,32 +77,35 @@ plot_5vs10_all(ndays5_notag$Cores, ndays5_notag$Dur_fin, ndays10_notag$Cores,
 
 #### Fitting ####-----------------------------------------------------------------------------
 xarg <- ndays5_notag$Cores
-yarg <- ndays5_notag$Dur_tot
+yarg <- ndays5_notag$Throughput
 xarg2 <- ndays10_notag$Cores
-yarg2 <- ndays10_notag$Dur_tot
+yarg2 <- ndays10_notag$Throughput
 xarg3 <- ndays5_tag$Cores
-yarg3 <- ndays5_tag$Dur_tot
+yarg3 <- ndays5_tag$Throughput
 xarg4 <- ndays10_tag$Cores
-yarg4 <- ndays10_tag$Dur_tot
+yarg4 <- ndays10_tag$Throughput
 
 #fit_5d_notag <- lm(Dur_tot ~ bs(Cores, knots = c(28,112,196)), data = ndays5_notag)
 
 plot(xarg, yarg, pch=2, type = "p", col="darkblue", ylim=c(min(c(yarg,yarg2, yarg3, yarg4)), max(c(yarg,yarg2, yarg3, yarg4)) ),
-     main= "Total duration tagged vs no tags", xlab="Number of cores", ylab="Duration in seconds", xaxt="n")
+     main= "Throughput tagged vs no tags", xlab="Number of cores", ylab="Simulated_years / day ", xaxt="n")
+axis(1, at=c(28,56,84,112,140,168,196, 224))
+abline(v=c(28,56,84,112,140,168,196, 224), col = "lightgray", lty = "dotted", 
+       lwd=1)
+abline(h=seq(0,2,0.5), col = "lightgray", lty = "dotted", 
+       lwd=1)
 points(xarg2, yarg2, pch=2, type = "p", col="red")
 points(xarg3, yarg3, pch=16, type = "p", col="darkblue")
 points(xarg4, yarg4, pch=16, type = "p", col="red")
-legend("topright", legend = c("5 days no tags", "10 days no tags", "5 days tagged", "10 days tagged"),
+legend("topleft", legend = c("5 days no tags", "10 days no tags", "5 days tagged", "10 days tagged"),
        col= c("darkblue", "red", "darkblue", "red"), pch = c(2, 2, 16, 16), bty = "n")
-axis(1, at=c(28,56,84,112,140,168,196, 224))
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted",
-     lwd =1, equilogs = TRUE)
+
 
 # spline with 3 degrees of freedom
-sspline_5_not <- smooth.spline(ndays5_notag$Cores, ndays5_notag$Dur_tot, df=3)
-sspline_5_tag <- smooth.spline(ndays5_tag$Cores, ndays5_tag$Dur_tot, df=3)
-sspline_10_not <- smooth.spline(ndays10_notag$Cores, ndays10_notag$Dur_tot, df=3)
-sspline_10_tag <- smooth.spline(ndays10_tag$Cores, ndays10_tag$Dur_tot, df=3)
+sspline_5_not <- smooth.spline(xarg, yarg, df=3)
+sspline_5_tag <- smooth.spline(xarg3, yarg3, df=3)
+sspline_10_not <- smooth.spline(xarg2, yarg2, df=3)
+sspline_10_tag <- smooth.spline(xarg4, yarg4, df=3)
 lines(sspline_10_tag, col="red", lty = 3); 
 lines(sspline_5_tag, col="darkblue", lty = 3);
 lines(sspline_10_not, col="red", lty = 2); 
