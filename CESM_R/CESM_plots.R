@@ -1,7 +1,6 @@
 # Visualize profiling data
 rm(list=ls())
 
-require(splines)
 source("./CESM_prof.R")
 source("./plot_functions.R")
 
@@ -14,13 +13,17 @@ prof_tagged_df <- prof_data[[2]]
 prof_not_df <- prof_data[[1]]
 
 ndays5_tag <- subset(prof_tagged_df, NDays == 5 )
+ndays5_tag <- ndays5_tag[order(ndays5_tag$Cores),]
 ndays10_tag <- subset(prof_tagged_df, NDays == 10)
+ndays10_tag <- ndays10_tag[order(ndays10_tag$Cores),]
 
 ndays5_notag <- subset(prof_not_df, NDays == 5 )
+ndays5_notag <- ndays5_notag[order(ndays5_notag$Cores),]
 ndays10_notag <- subset(prof_not_df, NDays == 10)
+ndays10_notag <- ndays10_notag[order(ndays10_notag$Cores),]
 
 # reset par
-dev.off()
+#dev.off()
 
 #### PLOTS ####-------------------------------------------------------------------------
 saveVar <- FALSE
@@ -76,37 +79,41 @@ plot_5vs10_all(ndays5_notag$Cores, ndays5_notag$Dur_fin, ndays10_notag$Cores,
                ndays10_tag$Dur_fin, "Finish Duration",  saveVar, "5vs10_dur_fin_both")
 
 #### Fitting ####-----------------------------------------------------------------------------
+
 xarg <- ndays5_notag$Cores
-yarg <- ndays5_notag$Throughput
+yarg <- ndays5_notag$Cost
 xarg2 <- ndays10_notag$Cores
-yarg2 <- ndays10_notag$Throughput
+yarg2 <- ndays10_notag$Cost
 xarg3 <- ndays5_tag$Cores
-yarg3 <- ndays5_tag$Throughput
+yarg3 <- ndays5_tag$Cost
 xarg4 <- ndays10_tag$Cores
-yarg4 <- ndays10_tag$Throughput
+yarg4 <- ndays10_tag$Cost
 
-#fit_5d_notag <- lm(Dur_tot ~ bs(Cores, knots = c(28,112,196)), data = ndays5_notag)
-
-plot(xarg, yarg, pch=2, type = "p", col="darkblue", ylim=c(min(c(yarg,yarg2, yarg3, yarg4)), max(c(yarg,yarg2, yarg3, yarg4)) ),
-     main= "Throughput tagged vs no tags", xlab="Number of cores", ylab="Simulated_years / day ", xaxt="n")
+plot(xarg, yarg, pch=2, type = "p", col="darkblue", 
+     ylim=c(min(c(yarg,yarg2, yarg3, yarg4)), max(c(yarg,yarg2, yarg3, yarg4)) ),
+     main= "Cost tagged vs no tags", xlab="Number of cores", 
+     ylab="pe-hrs per simulated year", xaxt="n", lwd=2)
 axis(1, at=c(28,56,84,112,140,168,196, 224))
 abline(v=c(28,56,84,112,140,168,196, 224), col = "lightgray", lty = "dotted", 
        lwd=1)
-abline(h=seq(0,2,0.5), col = "lightgray", lty = "dotted", 
+abline(h=seq(0,14000,2000), col = "lightgray", lty = "dotted", 
        lwd=1)
-points(xarg2, yarg2, pch=2, type = "p", col="red")
+points(xarg2, yarg2, pch=2, type = "p", col="red", lwd=2)
 points(xarg3, yarg3, pch=16, type = "p", col="darkblue")
 points(xarg4, yarg4, pch=16, type = "p", col="red")
 legend("topleft", legend = c("5 days no tags", "10 days no tags", "5 days tagged", "10 days tagged"),
        col= c("darkblue", "red", "darkblue", "red"), pch = c(2, 2, 16, 16), bty = "n")
 
-
-# spline with 3 degrees of freedom
-sspline_5_not <- smooth.spline(xarg, yarg, df=3)
-sspline_5_tag <- smooth.spline(xarg3, yarg3, df=3)
-sspline_10_not <- smooth.spline(xarg2, yarg2, df=3)
-sspline_10_tag <- smooth.spline(xarg4, yarg4, df=3)
+# spline with "optimal" degrees of freedom
+sspline_5_not <- smooth.spline(xarg, yarg, cv=T)
+sspline_5_tag <- smooth.spline(xarg3, yarg3, cv=T)
+sspline_10_not <- smooth.spline(xarg2, yarg2, cv=T)
+sspline_10_tag <- smooth.spline(xarg4, yarg4, df=6)
 lines(sspline_10_tag, col="red", lty = 3); 
 lines(sspline_5_tag, col="darkblue", lty = 3);
 lines(sspline_10_not, col="red", lty = 2); 
 lines(sspline_5_not, col="darkblue", lty = 2)
+
+# Alternative approach for spline
+sspline_5_not <- lm(Throughput ~ bs(Cores, knots = c(28,112,196)), data = ndays5_notag)
+points(ndays5_notag$Cores,predict(sspline_5_not), col="darkblue", lty = 2)

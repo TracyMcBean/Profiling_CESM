@@ -79,11 +79,11 @@ get_data <- function(){
                           , dim = c(length(run_0111205), 21, 1))
   `row.names<-`(prof_data_tagged, row.names)
 # No tags 
-  prof_data_not <- array(c(run_025601, run_025605, run_028405, run_028405_2, run_0211205, run_0211210,
+  prof_data_not <- array(c(run_025601, run_025605, run_028405_2, run_0211205, run_0211210,
                          run_022801, run_022805, run_0222410, run_0222405, run_0219605, 
                          run_0219610, run_0216810, run_0216805, run_0214005, run_0214010,
                          run_028410, run_025610, run_022810),
-                       dim = c(length(run_0211205),19,1))
+                       dim = c(length(run_0211205),18,1))
   `row.names<-`(prof_data_not, row.names)
 
 # Conversion to data frame
