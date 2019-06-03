@@ -79,35 +79,37 @@ plot_5vs10_all(ndays5_notag$Cores, ndays5_notag$Dur_fin, ndays10_notag$Cores,
                ndays10_tag$Dur_fin, "Finish Duration",  saveVar, "5vs10_dur_fin_both")
 
 #### Fitting ####-----------------------------------------------------------------------------
-
+# degrees of freedom varies. Mostly set to cv=T
+# Cost: ndays10_tag is set to df = 6
 xarg <- ndays5_notag$Cores
-yarg <- ndays5_notag$Cost
+yarg <- ndays5_notag$Dur_init/60
 xarg2 <- ndays10_notag$Cores
-yarg2 <- ndays10_notag$Cost
+yarg2 <- ndays10_notag$Dur_init/60
 xarg3 <- ndays5_tag$Cores
-yarg3 <- ndays5_tag$Cost
+yarg3 <- ndays5_tag$Dur_init/60
 xarg4 <- ndays10_tag$Cores
-yarg4 <- ndays10_tag$Cost
+yarg4 <- ndays10_tag$Dur_init/60
 
 plot(xarg, yarg, pch=2, type = "p", col="darkblue", 
      ylim=c(min(c(yarg,yarg2, yarg3, yarg4)), max(c(yarg,yarg2, yarg3, yarg4)) ),
-     main= "Cost tagged vs no tags", xlab="Number of cores", 
-     ylab="pe-hrs per simulated year", xaxt="n", lwd=2)
+     main= "Initalization duration tagged vs no tags", xlab="Number of cores", 
+     ylab="Minutes", xaxt="n", yaxt="n", lwd=2)
 axis(1, at=c(28,56,84,112,140,168,196, 224))
+axis(2, at=seq(1,10,1))
 abline(v=c(28,56,84,112,140,168,196, 224), col = "lightgray", lty = "dotted", 
        lwd=1)
-abline(h=seq(0,14000,2000), col = "lightgray", lty = "dotted", 
+abline(h=seq(30,180,30), col = "lightgray", lty = "dotted", 
        lwd=1)
 points(xarg2, yarg2, pch=2, type = "p", col="red", lwd=2)
 points(xarg3, yarg3, pch=16, type = "p", col="darkblue")
 points(xarg4, yarg4, pch=16, type = "p", col="red")
-legend("topleft", legend = c("5 days no tags", "10 days no tags", "5 days tagged", "10 days tagged"),
+legend("topright", legend = c("5 days no tags", "10 days no tags", "5 days tagged", "10 days tagged"),
        col= c("darkblue", "red", "darkblue", "red"), pch = c(2, 2, 16, 16), bty = "n")
 
 # spline with "optimal" degrees of freedom
 sspline_5_not <- smooth.spline(xarg, yarg, cv=T)
 sspline_5_tag <- smooth.spline(xarg3, yarg3, cv=T)
-sspline_10_not <- smooth.spline(xarg2, yarg2, cv=T)
+sspline_10_not <- smooth.spline(xarg2, yarg2, df=6)
 sspline_10_tag <- smooth.spline(xarg4, yarg4, df=6)
 lines(sspline_10_tag, col="red", lty = 3); 
 lines(sspline_5_tag, col="darkblue", lty = 3);
