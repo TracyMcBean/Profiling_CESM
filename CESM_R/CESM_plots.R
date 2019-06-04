@@ -119,3 +119,5 @@ lines(sspline_5_not, col="darkblue", lty = 2)
 # Alternative approach for spline
 sspline_5_not <- lm(Throughput ~ bs(Cores, knots = c(28,112,196)), data = ndays5_notag)
 points(ndays5_notag$Cores,predict(sspline_5_not), col="darkblue", lty = 2)
+
+
